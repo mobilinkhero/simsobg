@@ -65,12 +65,15 @@ app.post('/remove-background', upload.single('image'), async (req, res) => {
         console.log(`Processing image: ${req.file.filename}`);
         const inputPath = req.file.path;
 
-        // Read the uploaded image
-        const imageBuffer = await fs.readFile(inputPath);
+        // Normalize image with Sharp first (fixes format issues)
+        console.log('Reading and normalizing image...');
+        const normalizedBuffer = await sharp(inputPath)
+            .png() // Convert to PNG
+            .toBuffer();
 
         // Remove background using AI
         console.log('Removing background...');
-        const resultBlob = await removeBackground(imageBuffer);
+        const resultBlob = await removeBackground(normalizedBuffer);
 
         // Convert Blob to Buffer
         const arrayBuffer = await resultBlob.arrayBuffer();
